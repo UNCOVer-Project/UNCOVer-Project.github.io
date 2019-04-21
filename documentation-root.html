@@ -10,7 +10,7 @@
 </head>
 <body>
 	<nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
-		<a class="navbar-brand" href="#">UNCOVer</a>
+		<a class="navbar-brand" href="index.html">UNCOVer</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
@@ -36,7 +36,7 @@
 					</a>
 					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
 						<a class="dropdown-item" href="#introduction">Introduction</a>
-
+						<a class="dropdown-item" href="#preq">Prerequisites Functions</a>
 					</div>
 				</li>
 			</ul>
@@ -108,6 +108,7 @@
 	pip install picamera
 	pip install pyAudio
 	pip install playsound
+	pip install speech_recognition
 </code>
 </pre>
 					<br/>
@@ -123,6 +124,304 @@
 					<a href="https://azure.microsoft.com/en-us/services/cognitive-services/custom-vision-service/" target="_blank">https://azure.microsoft.com/en-us/services/cognitive-services/custom-vision-service/</a>
 				</div>
 			</div>
+		</section>
+		<section id="preq" style="padding-top:70px;">
+			<div class="card">
+				<h4>Prerequisite Functions</h4>
+				<br>
+				<div id="preqParagraph">
+					<p>
+						There are a few Prerequisites scripts that were made, such as <kbd>cameraFixingPos.py</kbd> , <kbd>posutil.py</kbd> , <kbd>SpeechRecognition.py</kbd> , <kbd>util.py</kbd> , and <kbd>vorec.py</kbd> .
+					</p>
+					<p>
+						In this section we will describe what's inside those scripts, how to use it, and the use of the scripts.
+					</p>
+					<br>
+					<hr>
+					<br>
+					<h5>cameraFixingPos.py</h5>
+					<p>
+						First, we're going to take a look on <kbd>cameraFixingPos.py</kbd> , this function regulates camera usage of the program. It's task is pretty simple, it just regulates the Raspberry's Camera to start previewing, timing the shot, and of course take the photo. So here it is.
+					</p>
+					<div class="card">
+						<p><kbd>cameraFixingPos.py</kbd> : regulates camera and image retrieval. It has <code>imageCapture()</code> function.</p>
+						<hr>	
+<pre>
+	<code>
+	# Import PiCamera libary to run in Raspberry Pi
+	from picamera import PiCamera
+	from time import sleep
+	
+	# Create instance
+	cam = PiCamera()
+	def imageCapture():
+		# Set the camera resolution , can be adjusted for diffrent camera
+		cam.resolution = (2560, 1920)
+		cam.start_preview()
+		sleep(4)
+		
+		# Capture image and save it into jpg file so it can be processed later
+		cam.capture('capture/image.jpg')
+		cam.stop_preview()
+	
+		# Return image
+		return 'capture/image.jpg'
+		
+	imageCapture()
+	</code>
+</pre>
+	
+					</div>
+					<p>First, we initialize the <code>PiCamera</code> class on a variable, in this case, it's <pre>cam = PiCamera()</pre></p>
+					<p>After that, we call the <code>imageCapture()</code> function which will initialize the <code>imageCapture()</code> function.
+<pre>
+cam = PiCamera()
+imageCapture()
+</pre>
+					</p>
+					<p>
+						<code>cam.resolution</code> regulates the resolution of the outputted image, it's basically a <code>(w, h)</code> configuration, for example, we want a 1920x1080 image, so we set: <pre>cam.resolution = (1920, 1080)</pre>
+					</p>
+					<p>The <code>cam.start_preview()</code> tells the camera to start working. When this function runs, we should start to see the camera's viewfinder on our screen.</p>
+					<p>After that we set the <code>sleep()</code> time, which functions as a timer of how long the camera waits before taking a picture. In this case, we put 4 seconds. So it's <code>sleep(4)</code>.</p>
+					<p>Now, we capture the image using the <code>cam.capture()</code>. Inside the brackets, we put the desired photo directory, and the picture will be there. For example <code>cam.capture('capture/image.jpg')</code></p>
+					<p>Next, the <code>cam.stop_preview()</code> is the opposite of <code>cam.start_preview()</code>. When initialized, it should stop the working camera.</p>
+					<p>After that we return the photo directory string to be used. ( <code>return 'capture/image.jpg' </code>)</p>
+					<br>
+					<hr>
+					<br>
+					<h5>posutil.py</h5>
+					<p>Next, we're going to take a look on <kbd>posutil.py</kbd> . This script regulates on determining object positions, in this case, it could be finger's position, and/or other objects positions. It has 3 functions: <code>getFingersMiddlePos(fingerResult, shapesize)</code>, <code>findObjectLocation(listOfObj, img_size)</code>, and <code>findClosestObjectFromFinger(objectResults, fingerMidPos,
+							withCoord=False)</code></p>
+					<p>Firstly, let's have a look on <code>findObjectLocation()</code>.</p>
+					<div class="card">
+						<p><code>findObjectLocation(listOfObj, img_size)</code>  determines each object's relative position on the picture.</p>
+						<hr>
+<pre>
+	<code>
+	def findObjectLocation(listOfObj, img_size):
+
+	# returned value listOfTuple
+	validObjs = []
+
+	# get img dimension
+	widthImg, heightImg = img_size
+
+	for names, pos in listOfObj:
+		x, _, w, _ = pos
+
+		# middle point each obj
+		xt = (w)/2.0 + x
+
+		# divide img scene into 3 partition
+		if xt <= widthImg/3.0:
+			orientation = "left"
+		elif xt <= 2.0 * widthImg/3.0:
+			orientation = "center"
+		else:
+			orientation = "right"
+
+		validObjs.append((names, orientation))
+
+	return validObjs
+	</code>
+						</pre>
+					</div>
+						<p>
+							First, we're going to make an empty list (<code>validObjs = []</code>) which later will be our return value. The list will contain a tuple which contains the object's name and position. (ex. <code>("glasses", "left")</code>)
+						</p>
+						<p>
+							Then, we declare some variables to store the image dimension. In this case <code>widthImg, heightImg</code>.
+						</p>
+						<p>
+							After that we iterate through the <code>listOfObj</code> to get every object's location in the image. After getting the object location, we look for the middle point for every object.
+						</p>
+						<p>
+							After all the data has been obtained, lastly we divided the image into 3 sections, which is: left section, center section, and right section.
+						</p>
+						<p>
+							Next, we will compare the image's middle point location to the range of each section, if the middle point's location is less than <code>widthImg/3.0</code>, then the object is located on the left, if it's less than <code>2.0 * widthImg/3.0</code> then the object is located on the center, and lastly, if it doesn't fulfill previous requirements, it must be on the right.
+						</p>
+						<p>
+							After the calculation we append the results to our <code>validObjs</code> list.
+						</p>
+						<p>
+							After the last iteration, the <code>validObjs</code> returned to be used.
+						</p>
+						<br>
+						<hr>
+						<br>
+						<p>Next, we'll take a look on <code>getFingersMiddlePos(fingerResult, shapesize)</code>.</p>
+						<div class="card">
+							<p><code>getFingersMiddlePos(fingerResult, shapesize)</code> : function to determine finger's center point location or coordinate. </p>
+							<hr>
+<pre>
+	<code>
+	def getFingersMiddlePos(fingerResult, shapesize):
+		if len(fingerResult) < 1:
+			return []
+
+		positions = []
+
+		# get fingers position
+		for _, fingerPos in fingerResult:
+			left, top, width, height = fingerPos
+
+			# shapesize = getImageSize(image_path)
+			left = int(left * float(shapesize[0]))
+			top = int(top * float(shapesize[1]))
+			width = left + int(width * float(shapesize[0]))
+			height = top + int(height * float(shapesize[1]))
+			# print('l: {}, t: {}, w: {}, h: {}'.format(left, top, width, height))
+
+			# middle point of finger
+			xF = int((left + width) / 2.0)
+			yF = int((top + height) / 2.0)
+			# print('FINGER - xF: {}, yF: {}'.format(xF, yF))
+
+			positions.append((xF, yF))
+
+		return positions
+	</code>
+</pre>
+						</div>
+						<p>
+							Firstly, we must have the finger detection data and the canvas size. So this function needs <code>fingerResult</code> and <code>shapesize</code>. fingerResult is the returned value of the Azure Custom Vision for the index detection. Here's how it formed: <code>[("index", (left, top, width, height))]</code>.
+						</p>
+						<p>
+							After getting the data, we get the x position of finger's center point by dividing the width into half, then we add the x (left position).
+							After that we can also get the y position of finger's center point by dividing the height into half then add the y (top position).
+						</p>
+						<br>
+						<hr>
+						<br>
+						<p>
+							Next, we're going to take a look on the <code>findClosestObjectFromFinger(objectResults, fingerMidPos,
+									withCoord=False)</code>.
+						</p>
+						<div class="card">
+							<p><code>findClosestObjectFromFinger(objectResults, fingerMidPos,
+									withCoord=False)</code> : uses the informations from the objects locations, finger's middle point, this function determines which object is the closest to the pointing finger. 
+							</p>
+							<hr>
+<pre>
+	<code>
+	def findClosestObjectFromFinger(objectResults, fingerMidPos, withCoord=False):
+
+	xF, yF = fingerMidPos
+	print('FINGER - xF: {}, yF: {}'.format(xF, yF))
+
+	distances = []
+	names = []
+	coords = []
+
+	# get object mid positions
+	for objName, objPos in objectResults:
+		x, y, w, h = objPos
+
+		xObj = int(w/2 + x)
+		yObj = int(h/2 + y)
+
+		dist = int(math.sqrt(((xF - xObj) ** 2) + ((yF - yObj) ** 2)))
+
+		print('{} - x: {}, y: {}'.format(objName, xObj, yObj))
+
+		distances.append(dist)
+		names.append(objName)
+		if withCoord is True:
+		coords.append((xObj, yObj))
+
+	closest = distances.index(min(distances))
+
+	if withCoord is True:
+		return (names[closest], coords[closest])
+	else:
+		return names[closest]
+	</code>
+</pre>
+						</div>
+						<p>
+							<code>objectResults</code> is a list of tuples containing each object's location data on the image. <code>fingerMidPos</code> is obtained using the <code>getFingersMiddlePos(fingerResult, shapesize)</code>
+						</p>
+						<p>
+							By default, <code>withCoord</code> is equal to false, but if coordinate is used on the dataset, then change this flag to <code>true</code>.
+						</p>
+						<p>First, we get the <code>(x,y)</code> point of the finger, then we create empty lists that will contain distances, names, and coordinates of every object relative to the finger's position.</p>
+						<p>
+							After that we iterate through every object's location data to find every object distances relative to finger's location using Euclidean distance formula.
+							<pre>dist = int(math.sqrt(((xF - xObj) ** 2) + ((yF - yObj) ** 2)))</pre>
+						</p>
+						<p>Then simply append it to our distances list.</p>
+						<p>Since we're looking for the closest object to the finger, we only take the object that has the minimum relative distance to the finger. Hence, we use
+						<pre>closest = distance.index(min(distances))</pre>
+						</p>
+						<p>
+							After that, simply returned the object name, or with coordinates too if the <code>withCoord=true</code>.
+<pre>
+if withCoord is True:
+	return (names[closest], coords[closest])
+else:
+	return names[closest]
+</pre>
+						</p>
+						<br>
+						<hr>
+						<br>
+						<h5>SpeechRecognition.py</h5>
+						<p><kbd>SpeechRecognition.py</kbd> regulates the Azure speech-to-text service that we use for the commands to the UNCOVer.</p>
+						<p>It contains one class named <code>SpeechRecognition</code>.</p>
+						<p>To use this class, it's better if you have your own Azure Subscription Key for the Speech Services, if you don't have one, the default one will be used. But Microsoft could just revoked it at anytime.</p>
+						<div class="card">
+							<p><code>SpeechRecognition()</code> : Manages Azure Speech-to-Text requests. </p>
+							<hr>
+<pre>
+	import speech_recognition as sr
+
+	class SpeechRecognition:
+
+	def __init__(self, token_key='DEFAULT_TOKEN_KEY'):
+		self.token_key = token_key
+
+	def recognize(self, device_index=-1):
+		r = sr.Recognizer()
+		if device_index == -1:
+			mic = sr.Microphone()
+		else:
+			mic = sr.Microphone(device_index=device_index)
+
+		with mic as source:
+			print('Please silent...')
+			r.adjust_for_ambient_noise(source)
+			print('Recording...')
+			audio = r.listen(source)
+
+		print('Done recording...')
+		text = ''
+		try:
+			text = r.recognize_azure(
+				audio, self.token_key, location='southeastasia'
+			)
+		except sr.UnknownValueError:
+			print('The voice is not recognizable')
+			text = ''
+
+		return text
+</pre>
+						</div>
+						<p>
+							On initialization, it puts Azure Speech Subscription key to itself, if you have your own key, you can change it yourself.
+						</p>
+						<p>
+							And then there is the <code>recognize(self, device_index=-1)</code> function. It basically records command using our desired audio record device (in this case, determined by the <code>device_index</code> we declare. Else, it will use the default audio record device).
+						</p>
+						<p>
+							<code>sr.Recognizer()</code> is used from the <code>speech_recognition</code> library. We use it to pickup the audio.
+						</p>
+						<p><code>sr.Microphone()</code> is used to set the microphone and of course, using the microphone to record the sound.</p>
+						<p>After that we create the audio file filled with commands that we will send to Azure Speech-to-Text services. To see full documentation of <code>speech_recognition</code>, click <a href="https://pypi.org/project/SpeechRecognition/">here</a>.</p>
+						<p>After recording the command, we make an empty string variable to contain the result from the text-to-speech service, and if there's an error, we'll return that empty string.</p>
+					</div>
+				</div>
 		</section>
 	</div>
 
