@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="style.css">
+	<title>UNCOVer</title>
+</head>
+<body>
+	<nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
+		<a class="navbar-brand" href="#">UNCOVer</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="index.html" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Idea
+					</a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" href="index.html#background">Background</a>
+						<a class="dropdown-item" href="index.html#whatis">What Is UNCOVer </a>
+						<a class="dropdown-item" href="index.html#howit">How To Use UNCOVer </a>
+						<a class="dropdown-item" href="index.html#howUWork">How UNCOVer Works</a>
+						<a class="dropdown-item" href="index.html#tools">The Tools</a>
+						<a class="dropdown-item" href="index.html#aboutus">About us</a>
+					</div>
+				</li>
+				<li class="nav-item dropdown active">
+					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Documentation
+					</a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" href="#introduction">Introduction</a>
+
+					</div>
+				</li>
+			</ul>
+		</div>
+	</nav>
+
+	<div class="container">
+		<section id="introduction">
+			<h1 class="heading dark">UNCOVer Project Documentation</h1>
+			<div class="alert alert-danger" role="alert">
+				Documentations is still in progress! Sorry for the inconvenience.
+			</div>
+			<div class="card">
+				<h4 class="heading">Intro</h4>
+				<div id="introParagraph">
+					<p>
+						UNCOVer is a project to help sightless person to see objects and tell it's position, describe pointed object, read a text, analyze and desribe and image. In this documentation you will found the explanations for the codes and algorithm used.
+					</p>
+					<br/>
+					
+					<h5>Things Needed to use UNCOVer</h5>
+					<br/>
+					<h6><a href="https://github.com/UNCOVer-Project/UNCOVer-Main-Final-RaspberryPi" target="_blank">Clone this Github Repository</a></h6>
+					<p>Simply, the source code of the project.</p>
+					<h6><a href="https://azure.microsoft.com/en-us/">Azure Account</a></h6>
+					<p>
+						You need Azure account to access <a href="https://azure.microsoft.com/en-us/services/cognitive-services/" target="_blank">Azure Cognitive Services</a>. 
+					</p>
+					<br/>
+					<h5>Tools and Services Used</h6>
+					<br/>
+					<h6><a href="https://azure.microsoft.com/en-us/services/cognitive-services/computer-vision/" target="_blank">Azure Vision Cognitive Services</a></h6>
+					<p>
+						Extract rich information from images to categorize and process visual data—and perform machine‑assisted moderation of images.
+						Azure Vision is used on object detection mode and pointed object mode.
+					</p>
+					<h6><a href="https://azure.microsoft.com/en-us/services/cognitive-services/speech-services/" target="_blank">Azure Speech Services</a></h6>
+					<p>
+						Swiftly convert audio to text for natural responsiveness. The Speech to Text and Text to Speech API is part of the Speech services.
+						Speech services is used to convert response from string into audio, which will be the response given by the device.
+						Speech is also used to convert user's commands into a string that can be analyzed by the algorithm.
+					</p>
+					<h6><a href="https://azure.microsoft.com/en-us/services/cognitive-services/custom-vision-service/" target="_blank">Azure Custom Vision</a></h6>
+					<p>
+						Azure Custom Vision are used for to train a model of index finger. UNCOVer will use this custom vision to detect index finger of the user and decide what object is pointed using our algorithm
+					</p>
+					<h6><a href="https://www.python.org/" target="_blank">Python</a></h6>
+					<p>This Program is coded on Python Programming Language.</p>
+					<h6><a href="https://www.raspberrypi.org/downloads/raspbian/" target="_blank">Raspbian OS</a></h6>
+					<p>We're using Raspberry's default OS for this project. Use your preffered OS with caution, as some dependencies may differ.</p>
+					<h6><a href="https://thonny.org/" target="_blank">Thonny IDE</a></h6>
+					<p>IDE to Code and Debug Python in Raspberry OS. Use other IDEs as you wish.</p>
+					<br/>
+					<h5>Hardwares that We Use:</h5>
+					<ul>
+						<li>Raspberry Pi 3 Model B+</li>
+						<li>Raspberry Battery Pack</li>
+						<li>Camera Module</li>
+						<li>Microphone</li>
+						<li>Earphone</li>
+					</ul>
+					<br/>
+					<h5>Dependencies: (Suit with your needs as well, this are for it to run on Raspberry)</h5>
+<pre>
+<code>
+	pip install mutagen
+	pip install pillow
+	pip install requests
+	pip install picamera
+	pip install pyAudio
+	pip install playsound
+</code>
+</pre>
+					<br/>
+					<h5>Documentations & References</h5>
+					<br/>
+					<h6>A Quickstart guide on using Azure Speech Services on Python</h6>
+					<a href="https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/quickstart-python" target="_blank">https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/quickstart-python</a> 
+					<br/>
+					<h6>A Quickstart guide on using Azure Text-to-Speech on Python</h6>
+					<a href="https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/quickstart-python-text-to-speech" target="_blank">https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/quickstart-python-text-to-speech</a>
+					<br/>
+					<h6>A Quickstart guide on using Azure Custom Vision</h6>
+					<a href="https://azure.microsoft.com/en-us/services/cognitive-services/custom-vision-service/" target="_blank">https://azure.microsoft.com/en-us/services/cognitive-services/custom-vision-service/</a>
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<!-- Javascripts-->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script>
+		var sections = $('section'),
+		nav = $('nav'),
+		nav_height = nav.outerHeight();
+	
+		$(window).on('scroll', function () {
+				var cur_pos = $(this).scrollTop();
+	
+				sections.each(function() {
+				var top = $(this).offset().top - nav_height,
+				bottom = top + $(this).outerHeight();
+	
+				if (cur_pos >= top && cur_pos <= bottom) {
+						nav.find('a').removeClass('active');
+						sections.removeClass('active');
+	
+					$(this).addClass('active');
+						nav.find('a[href="#'+$(this).attr('id')+'"]').addClass('active');
+				}
+				});
+		});
+	</script>
+</body>
+</html>

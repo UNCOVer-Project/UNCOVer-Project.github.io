@@ -1,0 +1,31 @@
+#content{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+html{
+    scroll-behavior: smooth;
+}
+
+.container{
+    padding:20px;
+}
+
+#intro{
+    padding-top:10px;
+}
+
+.heading{
+    margin-bottom: 10px;
+}
+
+p{
+    text-align: justify; 
+    margin-bottom: 20px;
+}
+
+.card{
+    padding:20px;
+    margin-bottom: 20px;
+}
