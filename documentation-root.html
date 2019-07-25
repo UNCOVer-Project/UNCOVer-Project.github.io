@@ -36,7 +36,7 @@
 					</a>
 					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
 						<a class="dropdown-item" href="#introduction">Introduction</a>
-						<a class="dropdown-item" href="#preq">Prerequisites Functions</a>
+						<a class="dropdown-item" href="#preq">Prerequisite Functions</a>
 					</div>
 				</li>
 			</ul>
@@ -139,6 +139,7 @@
 					<br>
 					<hr>
 					<br>
+					<!--cameraFixingPos.py Section-->
 					<h5>cameraFixingPos.py</h5>
 					<p>
 						First, we're going to take a look on <kbd>cameraFixingPos.py</kbd> , this function regulates camera usage of the program. It's task is pretty simple, it just regulates the Raspberry's Camera to start previewing, timing the shot, and of course take the photo. So here it is.
@@ -155,7 +156,7 @@
 	# Create instance
 	cam = PiCamera()
 	def imageCapture():
-		# Set the camera resolution , can be adjusted for diffrent camera
+		# Set the camera resolution , can be adjusted for different camera
 		cam.resolution = (2560, 1920)
 		cam.start_preview()
 		sleep(4)
@@ -190,6 +191,7 @@ imageCapture()
 					<br>
 					<hr>
 					<br>
+					<!--posutil.py Section-->
 					<h5>posutil.py</h5>
 					<p>Next, we're going to take a look on <kbd>posutil.py</kbd> . This script regulates on determining object positions, in this case, it could be finger's position, and/or other objects positions. It has 3 functions: <code>getFingersMiddlePos(fingerResult, shapesize)</code>, <code>findObjectLocation(listOfObj, img_size)</code>, and <code>findClosestObjectFromFinger(objectResults, fingerMidPos,
 							withCoord=False)</code></p>
@@ -367,6 +369,7 @@ else:
 						<br>
 						<hr>
 						<br>
+						<!--SpeechRecognition.py Section-->
 						<h5>SpeechRecognition.py</h5>
 						<p><kbd>SpeechRecognition.py</kbd> regulates the Azure speech-to-text service that we use for the commands to the UNCOVer.</p>
 						<p>It contains one class named <code>SpeechRecognition</code>.</p>
@@ -421,8 +424,639 @@ else:
 						<p>After that we create the audio file filled with commands that we will send to Azure Speech-to-Text services. To see full documentation of <code>speech_recognition</code>, click <a href="https://pypi.org/project/SpeechRecognition/">here</a>.</p>
 						<p>After recording the command, we make an empty string variable to contain the result from the text-to-speech service, and if there's an error, we'll return that empty string.</p>
 					</div>
+					<br>
+					<hr>
+					<br>
+					<!--Util.py Section-->
+					<h5>util.py</h5>
+					<p><kbd>util.py</kbd> consists of utilities used to help the main algorithm to work.</p>
+					<p>The first one is a function called <code>getImageSize(image_path)</code></p>
+					<div class="card">
+						<p><code>getImageSize(image_path)</code> : returns the designated image size (width, height)</p>
+						<hr>
+<pre>
+	<code>
+	def getImageSize(image_path):
+		im = Image.open(image_path)
+		width, height = im.size
+
+		return (width, height)	
+	</code>
+</pre>
+					</div>
+					<p><code>getImageSize</code> has 1 parameter that has to be satisfied. Which is <code>image_path</code>. <code>image_path</code> is the path to the image that we wish to get the size.</p>
+					<p>The next one is <code>playSound(filepath)</code> which plays the designated audio file.</p>
+					<div class="card">
+						<p><code>getImageSize(image_path)</code> : returns the designated image size (width, height)</p>
+						<hr>
+<pre>
+	<code>
+	def playSound(filepath):
+		playsound(filepath)	
+	</code>
+</pre>
+					</div>
+					<p><code>playSound(filepath)</code> has 1 parameter that needs to be satisfied, which is <code>filepath</code>. <code>filepath</code> is the path of the audio file we wish to play.</p>
+					<p><kbd>util.py</kbd> contains several classes named: <code>Object Detection</code>, <code>TextToSpeech</code>, <code>FingerDetection</code>, <code>OCR</code>, <code>Describe</code>, and <code>Analyze</code>.</p>
+					<p>First, we'll look into the first class, which is <code>Object Detection.</code></p>
+					<p><code>Object Detection</code> class has methods, the first one called <code>__init__</code> is called on initialization. On <code>__init__</code> we put our Azure API Subscription Key and our Image Path to the class so later it can be used for our <code>Object Detection</code> service.</p>
+					<div class="card">
+						<p><code>__init__(self, subscription_key, image_path)</code> : Puts Azure API Subscription key and Image Path to object from class <code>Object Detection</code>. </p>
+						<hr>
+<pre>
+	<code>
+	def __init__(self, subscription_key, image_path):
+
+		self.subscription_key = subscription_key
+		self.image_path = image_path
+	</code>
+</pre>
+					</div>
+					<br>
+					<hr>
+					<br>
+					<p>Next, we have the <code>DetectObject(self)</code> function. It basically runs our Object Detection service with the value we provided on initialization. You may want to change the <code>vision_base_url</code> to your region's service for better performance. This function converts our image to bytearray and passes it to our request url to be analyzed using Microsoft Azure Cognitive Services. Later, we get a result in JSON format.</p>
+					<div class="card">
+						<p><code>DetectObject(self)</code> : Makes a request to Azure ObjectDetection API, and get the result in JSON format.</p>
+						<hr>
+<pre>
+	<code>
+	def DetectObject(self):
+		print('LOG: Commencing image recognition of ' + self.image_path + '\nusing Azure Computer Vision API...')
+
+		subscription_key = self.subscription_key
+
+		print('LOG: Using vision subscription_key ' + subscription_key)
+
+		assert subscription_key
+
+		# You may want to change it with your specified region services.
+		vision_base_url = ("https://southeastasia.api.cognitive.microsoft.com/"
+							+ "vision/v2.0/")
+
+		print('LOG: Using vision base url ' + vision_base_url)
+
+		analyze_url = vision_base_url + "detect"
+
+		print('LOG: Reading the image into a byte array...')
+
+		# Read the image into a byte array
+		image_data = open(self.image_path, "rb").read()
+
+		# HTTP request header
+		headers = {'Ocp-Apim-Subscription-Key': subscription_key,
+					'Content-Type': 'application/octet-stream'}
+		params = {'visualFeatures': 'Categories,Description,Color'}
+		# receiving result from API
+		response = requests.post(
+			analyze_url, headers=headers, params=params, data=image_data)
+		response.raise_for_status()
+
+		print('LOG: Receiving JSON response...')
+
+		self.result = response.json()
+
+		print('LOG: JSON response received...')
+	</code>
+</pre>
+					</div>
+					<br>
+					<hr>
+					<br>
+					<p>Next, we're going to take a look at the next function which is <code>getDetectedObject(self)</code>. This function parses our JSON received from the <code>DetectObject(self)</code> function, so we can take the object name and the location of the object.</p>
+					<div class="card">
+						<p><code>getDetectedObject(self)</code> : Parses the JSON result from <code>DetectObject(self)</code> function to get object name and locations. Returns list of tuples.</p>
+						<hr>
+<pre>
+	<code>
+	def getDetectedObject(self):
+
+		result = self.result
+	
+		objects_detected = []
+		# parse object names from JSON response
+		print('LOG: Parsing object names from JSON...')
+		for dicts in result['objects']:
+			object_name = dicts['object']
+			object_pos = []
+			for i in dicts['rectangle']:
+				object_pos.append(dicts['rectangle'][i])
+
+			objects_detected.append((object_name, object_pos))
+
+		return objects_detected
+	</code>
+</pre>
+					</div>
+					<br>
+					<hr>
+					<br>
+					<p>Next, we will take a look on the second class, <code>TextToSpeech</code>.</p>
+					<p>Like other classes, <code>TextToSpeech</code> has an <code>__init__</code> function which runs at initialization.</p>
+					<p>What differs <code>TextToSpeech</code> from <code>ObjectDetection</code> is the parameters needed. While <code>ObjectDetection</code> requires Azure API Subscription Key for Vision services and the Image path used, <code>TextToSpeech</code> requires Azure API Subscription key for Speech services and the text that we want to convert to audio.</p>
+					<div class="card">
+						<p><code>__init__(self, subscription_key, text_candidate)</code> : Puts Azure API Subscription Key and Text that want to be converted to audio to object from class <code>TextToSpeech</code>. </p>
+						<hr>
+<pre>
+	<code>
+	def __init__(self, subscription_key, text_candidate):
+		print('LOG: Initializing TextToSpeech object...')
+		print('LOG: Using speech subscription_key ' + subscription_key)
+
+		self.subscription_key = subscription_key
+
+		self.tts = text_candidate
+
+		print('LOG: Speech output: ' + text_candidate)
+
+		self.access_token = None
+</code>
+</pre>
+					</div>
+					<br>
+					<hr>
+					<br>
+					<p>Next, we're going to take a look on the <code>get_token(self)</code> method.</p>
+					<p><code>get_token(self)</code> is used to get authorization key so we will be able to access the Azure Speech API.</p>
+					<div class="card">
+						<p><code>get_token(self)</code> : Gets bearer authorization key from Azure Speech Cognitive Services. </p>
+						<hr>
+<pre>
+	<code>
+	def get_token(self):
+		print('LOG: Getting token...')
+
+		fetch_token_url = ("https://southeastasia.api.cognitive.microsoft.com"
+						+ "/sts/v1.0/issueToken")
+
+		print('LOG: Fetching token at ' + fetch_token_url)
+		# HTTP request header
+		headers = {
+			'Ocp-Apim-Subscription-Key': self.subscription_key
+		}
+		# receiving result from API
+		response = requests.post(fetch_token_url, headers=headers)
+		self.access_token = str(response.text)
+	</code>
+</pre>
+					</div>
+					<br>
+					<hr>
+					<br>
+					<p>Finally, the last member of the class, <code>save_audio</code>.</p>
+					<p><code>save_audio</code> puts the request to the Azure Speech Services and then saves the response to an audio file that later can be used in the main program. Usually the audio from this method is used to tell the results of object detection.</p>
+					<p>This method has 2 parameters that must be satisfied. The first one is the <code>filename</code>, and <code>quality</code>.</p>
+					<p><code>filename</code> parameter should be filled with the desired output audiofile name, without the audiofile format.</p>
+					<p><code>quality</code> must be filled with number, either 1/0.</p>
+					<ul>
+						<li>If 1 is applied, the output file format is '.wav'</li>
+						<li>If 0 is applied, the output file format is '.mp3'</li>
+					</ul>
+					<p>The default quality value is 0.</p>
+					<div class="card">
+						<p><code>save_audio(self, filename, quality=0)</code> : Requests and saves the output audio file from the request.</p>
+						<hr>
+<pre>
+	<code>
+	def save_audio(self, filename, quality=0):
+		qual = (
+			'audio-24khz-48kbitrate-mono-mp3',
+			'riff-16khz-16bit-mono-pcm',
+			'riff-24khz-16bit-mono-pcm'
+
+		)
+
+		extension = '.wav'
+		if quality == 0:
+			extension = '.mp3'
+
+		print('LOG: Processing audio...')
+
+		base_url = 'https://southeastasia.tts.speech.microsoft.com/'
+
+		print('LOG: Using speech base url ' + base_url)
+
+		path = 'cognitiveservices/v1'
+		constructed_url = base_url + path
+		headers = {
+			'Authorization': 'Bearer ' + self.access_token,
+			'Content-Type': 'application/ssml+xml',
+			'X-Microsoft-OutputFormat': qual[quality],
+			'User-Agent': 'YOUR_RESOURCE_NAME'
+		}
+		xml_body = ElementTree.Element('speak', version='1.0')
+		xml_body.set('{http://www.w3.org/XML/1998/namespace}lang', 'en-us')
+		voice = ElementTree.SubElement(xml_body, 'voice')
+		voice.set('{http://www.w3.org/XML/1998/namespace}lang', 'en-US')
+		voice.set(
+			'name',
+			'Microsoft Server Speech Text to Speech Voice (en-US, Guy24KRUS)'
+		)
+		voice.text = self.tts
+		body = ElementTree.tostring(xml_body)
+
+		# receiving result from API
+		response = requests.post(constructed_url, headers=headers, data=body)
+		if response.status_code == 200:
+			print('LOG: Saving audio as ' + filename + '...')
+
+			with open(filename + extension, 'wb') as audio:
+				audio.write(response.content)
+				print(
+					"\nStatus code: "
+					+ str(response.status_code)
+					+ "\nYour TTS is ready for playback.\n"
+				)
+
+		else:
+			print(
+				"\nStatus code: "
+				+ str(response.status_code)
+				+ "\nSomething went wrong. "
+				+ "Check your subscription key and headers.\n"
+			)	
+	</code>
+</pre>
+					</div>
+					<br>
+					<hr>
+					<br>
+					<p>Next, We will take a look on <code>FingerDetection</code> class.</p>
+					<p>Just like other classes, <code>FingerDetection</code> class has an <code>__init__</code> method.</p>
+					<p><code>__init__</code> method in this class has 2 parameters that needs to be satisfied:</p>
+					<ul>
+						<li><code>prediction_key</code>, fill with your own subscription key on Azure Custom Vision API</li>
+						<li><code>image_path</code>, image path of an image that we want to find finger.</li>
+					</ul>
+					<div class="card">
+						<p><code>__init__(self, prediction_key, image_path)</code> : Puts Azure Custom Vision API Subscription Key and path to image that want to be analyzed.</p>
+						<hr>
+<pre>
+	<code>
+	def __init__(self, prediction_key, text_candidate):
+		self.prediction_key = prediction_key
+		self.image_path = image_path
+	</code>
+</pre>
+					</div>
+					<br>
+					<hr>
+					<br>
+					<p>Let's move on to <code>PredictImage(self)</code> method.</p>
+					<p>This method sends request to Azure Custom Vision API and analyzes the image that we sent - it will look for the specific object that we previously train to look for - and then gets the result in JSON format.</p>
+					<div class="card">
+						<p><code>PredictImage(self)</code> : Sends the image to Azure Custom Vision API and retrieve result in JSON format.</p>
+						<hr>
+<pre>
+	<code>
+	def PredictImage(self):
+		# req_url = (
+		#     'https://southeastasia.api.cognitive.microsoft.com/' +
+		#     'customvision/v1.1/Prediction/{}/image/nostore'.format(
+		#         self.project_id
+		#     )
+		# )
+		req_url = (
+			"https://southeastasia.api.cognitive.microsoft.com/"
+			+ "customvision/v3.0/Prediction/"
+			+ "47917e0f-ee76-4fc3-afe4-1eb02b94d6b0/"
+			+ "detect/iterations/Iteration7/image/nostore"
+		)
+
+		image_data = open(self.image_path, 'rb').read()
+
+		headers = {'Content-Type': 'application/octet-stream',
+					'Prediction-key': self.prediction_key}
+
+		# receiving result from API
+		response = requests.post(
+			req_url,
+			headers=headers,
+			data=image_data
+		)
+
+		response.raise_for_status()
+
+		self.result = response.json()
+	</code>
+</pre>
+					</div>
+					<br>
+					<hr>
+					<br>
+					<p>After that, let's dive in to <code>getPrediction(self, minProb=0)</code> method.</p>
+					<p>This function gets the JSON format retrieved by <code>PredictImage(self)</code> and then gets detected object which has a probability more than <code>minProb</code> value (default value is 0).</p>
+					<p>This method returns a list of tuple consisting the name of the object detected and the location of the object.</p>
+					<div class="card">
+						<p><code>getPrediction(self, minProb=0)</code> : Gets object detected from Custom Vision API and get objects that has probability higher than <code>minProb</code> parameter.</p>
+						<hr>
+<pre>
+	<code>
+	def getPrediction(self, minProb=0):
+		result = self.result
+		detected = []
+		# parse object names from JSON response
+		for dicts in result['predictions']:
+			prob = dicts['probability']
+
+			if prob < minProb:
+				continue
+
+			name = dicts['tagName']
+			pos = []
+			for i in dicts['boundingBox']:
+				pos.append(dicts['boundingBox'][i])
+
+			detected.append((name, pos))
+
+		return detected
+	</code>
+</pre>
 				</div>
-		</section>
+				<br>
+				<hr>
+				<br>
+				<p>Last but not least, <code>getPredictionJson(self)</code>.</p>
+				<p>This method returns the JSON which is the result from the API call. (from <code>PredictImage</code>)</p>
+				<div class="card">
+					<p><code>getPredictionJson(self)</code> : Returns the JSON object retrieved from the Custom API server.</p>
+					<hr>
+<pre>
+	<code>
+	def getPredictionJson(self):
+		result = self.result
+		return result
+	</code>
+</pre>
+				</div>
+				<br>
+				<hr>
+				<br>
+				<p><code>OCR</code> class performs OCR service for the application.</p>
+				<p>The <code>__init__</code> file consists of: </p>
+				<ul>
+					<li><code>sub_key</code>, subscription key for the OCR service.</li>
+					<li><code>img_path</code>, path to the image we wish to do OCR.</li>
+				</ul>
+				<div class="card">
+					<p><code>__init__(self, sub_key, img_path)</code> : Puts Subscription key and image path for the OCR service.</p>
+					<hr>
+<pre>
+	<code>
+	def __init__(self, sub_key, img_path):
+		self.sub_key = sub_key
+		self.img_path = img_path
+	</code>
+</pre>
+				</div>
+				<br>
+				<hr>
+				<br>
+				<p>The second method in the <code>OCR</code> class is <code>PerformOCR(self)</code></p>
+				<p><code>PerformOCR(self)</code> basically sends request to the OCR service from Azure and then retrieves the result in JSON format.</p>
+				
+				<div class="card">
+					<p><code>PerformOCR(self)</code> : Performs OCR Service request and retrieve the result in JSON format.</p>
+					<hr>
+<pre>
+	<code>
+	def PerformOCR(self):
+		assert self.sub_key
+
+		vision_base_url = ("https://southeastasia.api.cognitive.microsoft.com/"
+							+ "vision/v2.0/")
+
+		ocr_url = vision_base_url + "ocr"
+
+		# Read the image into a byte array
+		image_data = open(self.img_path, "rb").read()
+
+		# HTTP request header
+		headers = {'Ocp-Apim-Subscription-Key': self.sub_key,
+					'Content-Type': 'application/octet-stream'}
+		params = {'language': 'unk', 'detectOrientation': 'true'}
+		# receiving result from API
+		response = requests.post(
+			ocr_url, headers=headers, params=params, data=image_data)
+		response.raise_for_status()
+
+		self.result = response.json()
+	</code>
+</pre>
+				</div>
+				<br>
+				<hr>
+				<br>
+				<p><code>GetTexts(self)</code> method parses the JSON retrieved in the <code>PerformOCR(self)</code> method. With this function we take the result text from the OCR processing.</p>
+				<div class="card">
+					<p><code>GetTexts(self)</code> : Returns the text result from OCR readings.</p>
+					<hr>
+<pre>
+	<code>
+	def GetTexts(self):
+		text = ''
+
+		for i in self.result['regions']:
+			for j in i['lines']:
+				for k in j['words']:
+					# print(k['text'], end=' ')
+					text += (k['text'] + ' ')
+				text += '. '
+
+		return text
+	</code>
+</pre>
+				</div>
+				<br>
+				<hr>
+				<br>
+				<p>Next, we're going to move on to <code>Describe</code> class.</p>
+				<p>Of course it also has an <code>__init__</code> function. It's basically the same with <code>OCR</code> class.</p>
+				<p>The <code>__init__</code> function has 2 parameters that must be satisfied,
+				</p>
+				<ul>
+					<li><code>sub_key</code>, Subscription Key for Azure Vision Cognitive Services</li>
+					<li><code>img_path</code>, Path to image which we want to describe.</li>
+				</ul>
+				<div class="card">
+					<p><code>__init__(self, sub_key, img_path)</code> : Puts subscription key and image path to the object.</p>
+					<hr>
+<pre>
+	<code>
+	def __init__(self, sub_key, img_path):
+		self.sub_key = sub_key
+		self.img_path = img_path
+	</code>
+</pre>	
+			</div>
+			<br>
+			<hr>
+			<br>
+			<p><code>DescribeImage(self)</code> method sends the requests to Azure Vision API to perform Descriptive Analysis of an image.</p>
+			<div class="card">
+				<p><code>DescribeImage(self)</code> : Sends API Request to Azure Vision API and retrieves JSON results.</p>
+				<hr>
+<pre>
+<code>
+	def DescribeImage(self):
+		assert self.sub_key
+
+		vision_base_url = ("https://southeastasia.api.cognitive.microsoft.com/"
+							+ "vision/v2.0/")
+
+		desc_url = vision_base_url + "describe"
+
+		# Read the image into a byte array
+		image_data = open(self.img_path, "rb").read()
+
+		# HTTP request header
+		headers = {'Ocp-Apim-Subscription-Key': self.sub_key,
+					'Content-Type': 'application/octet-stream'}
+		params = {'maxCandidates': '1', 'language': 'en'}
+		# receiving result from API
+		response = requests.post(
+			desc_url, headers=headers, params=params, data=image_data)
+		response.raise_for_status()
+
+		self.result = response.json()
+
+</code>
+</pre>	
+			</div>
+			<br>
+			<hr>
+			<br>
+			<p><code>GetDescription(self)</code> function parses the JSON result from API requests on <code>DescribeImage(self)</code> function and returns the text result.</p>
+			<div class="card">
+				<p><code>DescribeImage(self)</code> : Sends API Request to Azure Vision API and retrieves JSON results.</p>
+				<hr>
+<pre>
+<code>
+	def GetDescription(self):
+		res = self.result
+
+		try:
+			return res['description']['captions'][0]['text']
+		except IndexError:
+			return 'There are no description for the scene'
+</code>
+</pre>	
+			</div>
+			<br>
+			<hr>
+			<br>
+			<p>Finally, the final class on <kbd>util.py</kbd>, <code>Analyze</code>.</p>
+			<p><code>Analyze</code> class provide Image analysis function to UNCOVer.</p>
+			<p>Like any other classes, we'll start with the class' constructor/init function.
+			</p>
+			<div class="card">
+				<p><code>__init__(self, sub_key, img_path)</code> : Initializes <code>Analyze</code> and put the <code>subscription_key</code> and <code>img_path</code> to the object's attributes.</p>
+				<hr>
+<pre>
+<code>
+	def __init__(self, sub_key, img_path):
+		self.sub_key = sub_key
+		self.img_path = img_path
+</code>
+</pre>	
+			</div>
+			<br>
+			<hr>
+			<br>
+			<p><code>AnalyzeImage(self)</code> sends the request to analyze image from the given image path.</p>
+			<div class="card">
+				<p><code>AnalyzeImage(self)</code> : sending request to Azure Vision API for analyzing image, gets JSON format response.</p>
+				<hr>
+<pre>
+<code>
+	def AnalyzeImage(self):
+		assert self.sub_key
+
+		vision_base_url = ("https://southeastasia.api.cognitive.microsoft.com/"
+							+ "vision/v2.0/")
+
+		analyze_url = vision_base_url + "analyze"
+		visualFeatures = (
+			'Brands,Color,Description,Faces'
+		)
+
+		# Read the image into a byte array
+		image_data = open(self.img_path, "rb").read()
+
+		# HTTP request header
+		headers = {'Ocp-Apim-Subscription-Key': self.sub_key,
+					'Content-Type': 'application/octet-stream'}
+		params = {'visualFeatures': visualFeatures,
+					'details': 'Celebrities,Landmarks'}
+		# receiving result from API
+		response = requests.post(
+			analyze_url, headers=headers, params=params, data=image_data)
+		response.raise_for_status()
+
+		self.result = response.json()
+</code>
+</pre>	
+			</div>
+			<br>
+			<hr>
+			<br>
+			<p><code>GetResult(self)</code> function returns the dominant color in the image, the branding of a product on the image (if any) also age and gender of people in the image.</p>
+			<p>This function retrieves the result from the JSON response from <code>AnalyzeImage(self)</code>.</p>
+			<div class="card">
+				<p><code>GetResult(self)</code> : parses the JSON reponse from <code>AnalyzeImage(self)</code>, returns a tuple consists of dominant color, scene description, and people information (age and gender).</p>
+				<hr>
+<pre>
+<code>
+	def GetResult(self):
+		res = self.result
+
+		colors = []
+		# get only the dominant colors that detected
+		for color in res['color']['dominantColors']:
+			colors.append(color)
+
+		brands = []
+		# get the detected brands
+		for brand in res['brands']:
+			brands.append(brand['name'])
+
+		# get description of the scene
+		desc = res['description']['captions'][0]['text']
+
+		faces = []
+		# get age and gender of detected people
+		for face in res['faces']:
+			faces.append((face['age'], face['gender']))
+
+		return ((colors, brands, desc, faces))
+</code>
+</pre>	
+			</div>
+			<br>
+			<hr>
+			<br>
+			<h5>vorec.py</h5>
+			<p><kbd>vorec.py</kbd> is basically an audioconfig. Only change this if necessary.</p>
+			<p>We're using Raspberry Pi so this config is used for Raspbian OS.</p>
+			<div class="card">
+				<p><kbd>vorec.py</kbd> : audio config.</p>
+				<hr>
+<pre>
+<code>
+	import os
+	from util import playSound
+
+	# For setting audio purposes
+	# Putenv is used to modify the environment 
+	# Using alsa advanced linux sound architecture
+	os.putenv('SDL_AUDIODRIVER', 'alsa')
+	os.putenv('SDL_AUDIODEV', '/dev/audio')
+	playSound('speech.mp3')
+</code>
+</pre>	
+			</div>
+		</div>
+	</section>
 	</div>
 
 	<!-- Javascripts-->
